@@ -701,19 +701,39 @@
     <script>
         // 1. تصنيفات المعرض (بدون التصاميم الافتراضية المؤقتة)
         const categoryNames = {
-            social: 'سوشيال ميديا',
-            branding: 'شعارات وهوية بصرية',
-            posters: 'أغلفة يوتيوب وبوسترات'
-        };
+  ahly: 'الأهلي',
+  real_madrid: 'ريال مدريد',
+  egypt: 'المنتخب المصري',
+  world_cup: 'كأس العالم 26',
+  legends: 'أساطير',
+  other: 'تصاميم مختلفة'
+};
 
-        // تحميل التصاميم التي يرفعها المستخدم فقط
-        let projects = [];
-        try {
-            const saved = localStorage.getItem('de4a_fx_user_projects');
-            projects = saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            projects = [];
-        }
+// التصاميم الثابتة التي تظهر للعميل ولكل الزوار
+const defaultProjects = [
+  {
+    id: 'default-1',
+    title: 'بوستر الأهلي',
+    category: 'ahly',
+    image: 'WhatsApp Image 2026-11-27 at 7.33.20 AM.jpeg'
+  },
+  {
+    id: 'default-2',
+    title: 'تصميم ريال مدريد',
+    category: 'real_madrid',
+    image: 'images/rm-1.jpg'
+  }
+];
+
+// تحميل التصاميم الثابتة + التصاميم التي ترفعها أنت محلياً
+let projects = [...defaultProjects];
+try {
+  const saved = localStorage.getItem('de4a_fx_user_projects');
+  const userProjects = saved ? JSON.parse(saved) : [];
+  projects = [...defaultProjects, ...userProjects];
+} catch (e) {
+  projects = [...defaultProjects];
+}
 
         const grid = document.getElementById('portfolio-grid');
 
