@@ -915,10 +915,14 @@ document.getElementById('upload-form').addEventListener('submit', async function
                     document.getElementById('new-tools').value = 'Photoshop, Canva';
                     document.getElementById('file-label').textContent = 'اضغط لاختيار صورة (PNG, JPG, WEBP)';
                     showToast('تمت إضافة تصميمك الجديد بنجاح إلى المعرض!');
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            }
-        });
+           renderProjects('all');
+        closeUploadModal();
+        document.getElementById('upload-form').reset();
+        document.getElementById('new-tools').value = 'Photoshop, Canva';
+        document.getElementById('file-label').textContent = 'اضغط لاختيار صورة (PNG, JPG, WEBP)';
+        showToast('تمت إضافة تصميمك الجديد بنجاح إلى المعرض!');
+    }
+});
 
         // 7. إشعارات Toast ونسخ الحسابات
         function showToast(msg) {
