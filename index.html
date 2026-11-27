@@ -366,6 +366,9 @@
                 <button data-filter="posters" class="filter-btn px-6 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all glass-card text-slate-300 hover:text-white cursor-pointer">
                     تصاميم مختلفه
                 </button>
+                <button data-filter="posters" class="filter-btn px-6 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all glass-card text-slate-300 hover:text-white cursor-pointer">
+                    هوية بصرية
+                </button>
             </div>
 
             <!-- شبكة عرض التصاميم -->
@@ -691,9 +694,13 @@
     <script>
         // 1. تصنيفات المعرض (بدون التصاميم الافتراضية المؤقتة)
         const categoryNames = {
-            social: 'سوشيال ميديا',
-            branding: 'شعارات وهوية بصرية',
-            posters: 'أغلفة يوتيوب وبوسترات'
+            desgin: 'الأهلي',
+            design: 'ريال مدريد',
+            design: 'المنتخب المصري'
+            design: 'كأس العالم 26'
+            design: 'أساطير'
+            design: 'تصاميم أخرى'
+            design: 'هوية بصرية'
         };
 
         // تحميل التصاميم التي يرفعها المستخدم فقط
@@ -850,41 +857,57 @@
             const modal = document.getElementById('upload-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-        }
+        }document.getElementById('new-image-file').addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+        const labelText = files.length === 1
+            ? `تم اختيار: ${files[0].name}`
+            : `تم اختيار ${files.length} صور (${files[0].name}...)`;
+        document.getElementById('file-label').textContent = labelText;
+    }
+});
 
-        document.getElementById('new-image-file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                document.getElementById('file-label').textContent = `تم اختيار: ${file.name}`;
-            }
+document.getElementById('upload-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const title = document.getElementById('new-title').value;
+    const category = document.getElementById('new-category').value;
+    const toolsRaw = document.getElementById('new-tools').value;
+    const desc = document.getElementById('new-desc').value || 'تصميم إبداعي جديد من أعمال de4a.fx.';
+    const fileInput = document.getElementById('new-image-file');
+
+    if (fileInput.files && fileInput.files.length > 0) {
+        const files = Array.from(fileInput.files);
+        const readFile = (file) => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target.result);
+            reader.readAsDataURL(file);
         });
 
-        document.getElementById('upload-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const title = document.getElementById('new-title').value;
-            const category = document.getElementById('new-category').value;
-            const toolsRaw = document.getElementById('new-tools').value;
-            const desc = document.getElementById('new-desc').value || 'تصميم إبداعي جديد من أعمال de4a.fx.';
-            const fileInput = document.getElementById('new-image-file');
+        const images = await Promise.all(files.map(readFile));
+        const newProject = {
+            id: Date.now(),
+            title: title,
+            category: category,
+            tools: toolsRaw.split(',').map(s => s.trim()).filter(Boolean),
+            desc: desc,
+            images: images
+        };
 
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const newProject = {
-                        id: Date.now(),
-                        title: title,
-                        category: category,
-                        tools: toolsRaw.split(',').map(s => s.trim()).filter(Boolean),
-                        desc: desc,
-                        imageUrl: event.target.result
-                    };
+        projects.unshift(newProject);
+        try {
+            localStorage.setItem('de4a_fx_user_projects', JSON.stringify(projects));
+        } catch (err) {
+            // في حال تجاوز حجم الصور مساحة التخزين المؤقتة يتم عرضها في الجلسة الحالية
+        }
 
-                    projects.unshift(newProject);
-                    try {
-                        localStorage.setItem('de4a_fx_user_projects', JSON.stringify(projects));
-                    } catch (err) {
-                        // في حال تجاوز حجم الصورة مساحة التخزين المؤقتة يتم عرضها في الجلسة الحالية
-                    }
+        renderProjects('all');
+        closeUploadModal();
+        document.getElementById('upload-form').reset();
+        document.getElementById('new-tools').value = 'Photoshop, Canva';
+        document.getElementById('file-label').textContent = 'اضغط لاختيار صورة (PNG, JPG, WEBP)';
+        showToast('تمت إضافة تصميمك الجديد بنجاح إلى المعرض!');
+    }
+});
 
                     renderProjects('all');
                     closeUploadModal();
