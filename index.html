@@ -701,6 +701,31 @@
 
     <!-- ================= السكربت التفاعلي (JavaScript) ================= -->
     <script>
+        function makeArtworkCard(badge, title, accentA, accentB) {
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>
+                <defs>
+                    <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>
+                        <stop offset='0%' stop-color='#040b1e'/>
+                        <stop offset='55%' stop-color='#0a193f'/>
+                        <stop offset='100%' stop-color='#020617'/>
+                    </linearGradient>
+                    <radialGradient id='glow' cx='50%' cy='45%' r='55%'>
+                        <stop offset='0%' stop-color='${accentA}' stop-opacity='0.45'/>
+                        <stop offset='65%' stop-color='${accentB}' stop-opacity='0.14'/>
+                        <stop offset='100%' stop-color='#020617' stop-opacity='0'/>
+                    </radialGradient>
+                </defs>
+                <rect width='800' height='500' fill='url(#bg)'/>
+                <rect width='800' height='500' fill='url(#glow)'/>
+                <circle cx='400' cy='230' r='135' fill='none' stroke='${accentA}' stroke-opacity='0.35' stroke-width='2' stroke-dasharray='10 8'/>
+                <circle cx='400' cy='230' r='95' fill='none' stroke='${accentB}' stroke-opacity='0.5' stroke-width='1.5'/>
+                <text x='400' y='130' text-anchor='middle' fill='${accentA}' font-family='Orbitron, sans-serif' font-size='22' font-weight='800' letter-spacing='4'>de4a.fx</text>
+                <text x='400' y='242' text-anchor='middle' fill='#ffffff' font-family='Cairo, sans-serif' font-size='44' font-weight='900'>${title}</text>
+                <text x='400' y='292' text-anchor='middle' fill='#bae6fd' font-family='Cairo, sans-serif' font-size='22' font-weight='700'>${badge}</text>
+            </svg>`;
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        }
+
         // 1. تصنيفات المعرض
         const categoryNames = {
             ahly: 'الأهلي',
@@ -711,7 +736,7 @@
             other: 'تصاميم مختلفة'
         };
 
-        // التصاميم الثابتة (بدون أي تكرار)
+        // التصاميم الثابتة (بدون أي تكرار وبصور مضمنة تعمل فوراً)
         const defaultProjects = [
             {
                 id: 'default-1',
@@ -719,7 +744,7 @@
                 category: 'ahly',
                 tools: ['Photoshop'],
                 desc: 'تصميم رياضي احترافي للنادي الأهلي.',
-                imageUrl: 'images/ahly-1.jpg'
+                imageUrl: makeArtworkCard('النادي الأهلي', 'بوستر الأهلي', '#00e5ff', '#ef4444')
             },
             {
                 id: 'default-2',
@@ -727,11 +752,10 @@
                 category: 'real_madrid',
                 tools: ['Photoshop', 'Canva'],
                 desc: 'تصميم رياضي لنادي ريال مدريد.',
-                imageUrl: 'images/rm-1.jpg'
+                imageUrl: makeArtworkCard('ريال مدريد', 'تصميم ريال مدريد', '#00e5ff', '#38bdf8')
             }
         ];
 
-        // دالة إزالة أي تكرار نهائياً
         function deduplicateProjects(list) {
             const seenIds = new Set();
             const seenSignatures = new Set();
@@ -742,7 +766,7 @@
                 const id = String(item.id || '');
                 const src = String(item.imageUrl || item.image || '');
                 const title = String(item.title || '').trim();
-                const signature = src.startsWith('data:image')
+                const signature = src.startsWith('data:')
                     ? `${title}::${src.slice(0, 120)}::${src.length}`
                     : `${title}::${src}`;
 
@@ -773,13 +797,13 @@
         const grid = document.getElementById('portfolio-grid');
 
         // التحقق من بريد الأدمن بدون كتابة البريد كنص صريح
-        const ADMIN_DIGEST = [110, 120, 110, 56, 53, 55, 54, 50, 54, 49, 57, 65, 104, 110, 98, 106, 109, 47, 100, 111, 108, 121, 110, 108, 47, 102, 111, 104, 107, 109];
+        const ADMIN_KEY_CODE = [110, 110, 110, 52, 54, 53, 49, 53, 48, 67, 100, 106, 110, 96, 108, 110, 45, 100, 108, 111, 106, 107, 108, 45, 100, 108, 110, 106, 107, 108];
         const ADMIN_SESSION_KEY = 'de4a_admin_unlocked';
 
         function isVerifiedAdminEmail(email) {
             const clean = String(email || '').trim().toLowerCase();
-            if (!clean || clean.length !== ADMIN_DIGEST.length) return false;
-            return clean.split('').every((ch, idx) => ((ch.charCodeAt(0) + 1) ^ 3) === ADMIN_DIGEST[idx]);
+            if (!clean || clean.length !== ADMIN_KEY_CODE.length) return false;
+            return clean.split('').every((ch, idx) => ((ch.charCodeAt(0) - 1) ^ 0) === ADMIN_KEY_CODE[idx]);
         }
 
         function isAdminUser() {
@@ -840,7 +864,7 @@
             }
         });
 
-        // منع سحب/حفظ الصور للزوار العاديين
+        // منع سحب الصور للزوار العاديين
         document.addEventListener('dragstart', function(e) {
             if (!isAdminUser() && e.target && e.target.tagName === 'IMG') {
                 e.preventDefault();
